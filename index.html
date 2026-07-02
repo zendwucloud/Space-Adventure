@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>War God SETH</title>
+    <title>Space Adventure</title>
     <style>
         /* --- 1. 基礎設定 --- */
-        html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background-color: #000; touch-action: none; position: fixed; }
+        /* 🌟 加入 100dvh 終極殺手鐧，強迫 Safari 扣除導覽列 */
+        html, body { margin: 0; padding: 0; width: 100%; height: 100vh; height: 100dvh; overflow: hidden; background-color: #000; touch-action: none; position: fixed; }
         body { background-image: url('background.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; display: flex; justify-content: center; align-items: center; font-family: 'Arial', sans-serif; user-select: none; -webkit-user-select: none; }
         
         .stage { 
             position: relative; 
             height: 100vh; 
-            width: calc(100vh * 9 / 16); 
+            height: 100dvh; /* 🌟 遊戲舞台跟隨動態高度 */
+            aspect-ratio: 9/16; 
             max-width: 100vw; 
-            max-height: calc(100vw * 16 / 9); /* 🌟 核心防護：寬度被壓時，強制壓低高度維持 9:16 */
+            max-height: calc(100vw * 16 / 9); 
             background-color: transparent; 
             opacity: 0; 
             transition: opacity 0.5s ease-in; 
@@ -22,21 +24,63 @@
         .stage.loaded { opacity: 1; }
 
         /* --- 2. 載入過場 --- */
-        #loading-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: transparent; z-index: 9999; display: flex; justify-content: center; align-items: center; transition: opacity 0.5s ease-out; }
+        #loading-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; height: 100dvh; background-color: transparent; z-index: 9999; display: flex; justify-content: center; align-items: center; transition: opacity 0.5s ease-out; }
         #loading-layer.hidden { opacity: 0; pointer-events: none; }
         .loading-container { 
             position: relative; 
             height: 100vh; 
-            width: calc(100vh * 9 / 16); 
+            height: 100dvh; /* 🌟 載入畫面跟隨動態高度 */
+            aspect-ratio: 9/16;
             max-width: 100vw; 
-            max-height: calc(100vw * 16 / 9); /* 🌟 同步鎖定載入畫面比例 */
+            max-height: calc(100vw * 16 / 9); 
             display: flex; flex-direction: column; justify-content: flex-end; align-items: center; 
         }
         .loading-visual { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
         .loading-bottom-ui { position: relative; z-index: 10; width: 70%; margin-bottom : 12%; display: flex; flex-direction: column; align-items: center; text-align: center; }
         #btn-start-game { margin-top: 3vh; padding: 1.5vh 6vh; font-family: 'Arial Black', sans-serif; font-size: 2.8vh; color: #fff; background: linear-gradient(180deg, #ff4500, #8b0000); border: 2px solid #ffd700; border-radius: 50px; box-shadow: 0 0 20px rgba(255, 69, 0, 0.8), inset 0 0 10px rgba(255, 255, 0, 0.3); cursor: pointer; display: block; animation: pulseBtn 1.5s infinite; }
         @keyframes pulseBtn { 0% { transform: scale(1); filter: brightness(1); } 50% { transform: scale(1.05); filter: brightness(1.2); } 100% { transform: scale(1); filter: brightness(1); } }
-     
+
+        /* --- 載入畫面特色介紹 (八方陰影純淨白字版) --- */
+        #loading-promo-text {
+            position: relative;
+            z-index: 10;
+            width: 85%;
+            margin-bottom: 3vh; 
+            text-align: center; 
+            opacity: 0; 
+            animation: fadeInPromo 1.5s ease-in forwards; 
+        }
+        .promo-title {
+            color: #ffffff;
+            font-size: 2.3vh; 
+            font-family: 'Arial Black', sans-serif;
+            margin-bottom: 1.5vh;
+            /* 🌟 拔掉 text-stroke，改用八方陰影包圍，保證白字不被吃掉 */
+            text-shadow: 
+                2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 
+                0 2px 0 #000, 2px 0 0 #000, 0 -2px 0 #000, -2px 0 0 #000,
+                3px 3px 5px rgba(0,0,0,0.9), 0 0 10px rgba(0,0,0,0.8);
+            letter-spacing: 1px;
+        }
+        .promo-item {
+            color: #ffffff;
+            font-size: 1.7vh; 
+            font-weight: 900; 
+            margin-bottom: 1.2vh;
+            line-height: 1.5;
+            text-align: left;
+            display: inline-block; 
+            /* 🌟 同理，內文用 1.5px 的八方陰影包圍 */
+            text-shadow: 
+                1.5px 1.5px 0 #000, -1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 
+                0 1.5px 0 #000, 1.5px 0 0 #000, 0 -1.5px 0 #000, -1.5px 0 0 #000,
+                2px 2px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.8);
+        }
+        @keyframes fadeInPromo { 
+            0% { opacity: 0; transform: translateY(10px); } 
+            100% { opacity: 1; transform: translateY(0); } 
+        }
+ 
         /* --- 3. 遊戲內部與特效 --- */
         .game-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; filter: brightness(1.0); }
         .free-mode .game-bg { filter: brightness(1.0); }
@@ -59,7 +103,7 @@
         .free-mode .buy-button { display: none; }
 
         /* --- 4. 捲軸與長條滾動系統 --- */
-        .reel-viewport { position: absolute; top: 22.76%; left: 0; width: 100%; height: 45.0%; overflow: hidden; z-index: 10; }
+        .reel-viewport { position: absolute; top: 23.66%; left: 0; width: 100%; height: 45.0%; overflow: hidden; z-index: 10; }
         .grid-container { width: 93.5%; height: 100%; margin: 0 auto; display: flex; justify-content: space-between; }
         .column { position: relative; width: 16.5%; height: 100%; display: block; z-index: 1; }
         
@@ -126,10 +170,10 @@
         #ui-multiplier, #ui-free-spins { display: none; font-size: 2.5vh; color: #00FFFF; text-shadow: 0 0 10px #0000FF; bottom: 18%; position: absolute; z-index: 500;}
         #ui-multiplier { right: 5%; } #ui-free-spins { left: 5%; }
        
-        #ui-message-bar { position: absolute; bottom: 25.14%; left: 50%; transform: translateX(-50%); width: 92%; height: 6vh; display: none; align-items: center; justify-content: center; z-index: 600; overflow: hidden; }
+        #ui-message-bar { position: absolute; bottom: 24.14%; left: 50%; transform: translateX(-50%); width: 92%; height: 6vh; display: none; align-items: center; justify-content: center; z-index: 600; overflow: hidden; }
         #msg-content { display: inline-block; white-space: nowrap; transition: transform 0.3s ease-out; padding: 0 10px; }
         .style-win { font-family: 'Arial Black', sans-serif; font-size: 3.5vh; color: #FFFF00; text-shadow: 2px 2px 0px #FF4500, 0 0 10px #FF8C00; letter-spacing: 1px; }
-        .style-promo { font-family: 'Arial', sans-serif !important; font-weight: bold !important; font-size: 2.8vh !important; color: #7492d9 !important; text-shadow: 2px 2px 0px #000 !important; }
+        .style-promo { font-family: 'Arial', sans-serif !important; font-weight: bold !important; font-size: 2.8vh !important; color: #52fcff !important; text-shadow: 2px 2px 0px #000 !important; }
         .style-blue { font-family: 'Arial Black', sans-serif !important; font-size: 3.2vh !important; color: #00FFFF !important; text-shadow: 0 0 10px #0000FF, 2px 2px 0px #000080 !important; letter-spacing: 1px; }
         .style-error { font-family: 'Arial Black', sans-serif !important; font-size: 3.2vh !important; color: #ff4500 !important; text-shadow: 0 0 10px #ff0000, 2px 2px 0px #000 !important; letter-spacing: 2px; }
 
@@ -222,6 +266,13 @@
             0% { box-shadow: inset 0 0 30px 10px rgba(38, 89, 255, 0.2); } 
             100% { box-shadow: inset 0 0 100px 50px rgba(20, 122, 255, 0.8); } 
         }
+        /* 🌟 修復邊緣 1px 漏光問題 (消除瀏覽器小數點像素運算誤差) */
+        #fg-mask, #fg-end-modal, #info-modal, #setting-modal, #buy-modal {
+            top: -1px !important;
+            left: -1px !important;
+            width: calc(100% + 2px) !important;
+            height: calc(100% + 2px) !important;
+        }
     </style>
 </head>
 <body>
@@ -229,6 +280,9 @@
     <div id="loading-layer">
         <div class="loading-container">
             <img src="loading.jpg" class="loading-visual" onerror="this.style.display='none'">
+            
+            <div id="loading-promo-text"></div>
+
             <div class="loading-bottom-ui"><div id="btn-start-game" style="display:block;">★ 點擊開始遊戲 ★</div></div>
         </div>
     </div>
@@ -416,15 +470,6 @@
             wait: function(ms) { return new Promise(resolve => setTimeout(resolve, ms)); },
             getSymbolEl: function(c, r) { return document.getElementById(`col-${c}`).querySelector(`div[data-row="${r}"]`); }
         };
-
-        window.addEventListener('message', (event) => {
-            const data = event.data;
-            if (data.type === 'initBalance') {
-                engine.state.credit = data.value;
-                document.getElementById('ui-credit').innerText = engine.state.credit.toLocaleString('en-US', {minimumFractionDigits: 2});
-            } 
-            else if (data.type === 'updateSettings') { window.AudioMgr.updateSettings(data.music, data.sfx); }
-        });
 
         function syncBalanceToLobby() {
             if (window.parent) window.parent.postMessage({ type: 'updateBalance', value: engine.state.credit }, '*');
@@ -702,18 +747,18 @@
                 
                 if (totalWin >= engine.state.bet * 20) {
                     window.AudioMgr.playSFX('bigwin');
-                    fountain = setInterval(() => { window.CoinManager.fire(40, 0.5); }, 200);
-                    for(let i=0; i<50; i++) { setTimeout(window.spawnConfetti, i * 40); }
+                    fountain = setInterval(() => { window.CoinManager.fire(50, 0.5); }, 200);
+                    for(let i=0; i<160; i++) { setTimeout(window.spawnConfetti, i * 40); }
                 } 
                 else if (totalWin >= engine.state.bet * 5) { 
                     window.AudioMgr.playSFX('bigwin');
-                    window.CoinManager.fire(100, 0.5);
-                    setTimeout(() => window.CoinManager.fire(80, 0.5), 600);
+                    window.CoinManager.fire(25, 0.5);
+                    setTimeout(() => window.CoinManager.fire(20, 0.5), 600);
                     window.spawnConfetti();
                 } 
                 else if (totalWin > 0) {
                     window.AudioMgr.playSFX('win_free');
-                    window.CoinManager.fire(30, 0.5);
+                    window.CoinManager.fire(12, 0.5);
                 } 
                 else { window.AudioMgr.playSFX('click'); }
 
@@ -735,9 +780,58 @@
                 if(gui.isAutoPlay || engine.state.isFreeGame) { setTimeout(() => engine.startSpin(), 800); }
             }
         });
+        // 🌟 方案 A：接收大廳傳來的說明文案與初始設定
+        window.addEventListener('message', (event) => {
+            const data = event.data;
+            if (data.type === 'initBalance') {
+                engine.state.credit = data.value;
+                document.getElementById('ui-credit').innerText = engine.state.credit.toLocaleString('en-US', {minimumFractionDigits: 2});
+            } 
+            else if (data.type === 'updateSettings') { 
+                window.AudioMgr.updateSettings(data.music, data.sfx); 
+            }
+            // 接收大廳傳來的說明文案 (終極防快取卡死版)
+            else if (data.type === 'initPromoText') {
+                const promoContainer = document.getElementById('loading-promo-text');
+                if (data.text && promoContainer) {
+                    let lines = data.text.split(/\r?\n/);
+                    let html = '';
+                    
+                    if (lines.length > 0 && lines[0].trim() !== '') {
+                        html += `<div class="promo-title">${lines[0]}</div>`;
+                    }
+                    for (let i = 1; i < lines.length; i++) {
+                        let line = lines[i].trim();
+                        if (line !== '') {
+                            // 自動偵測分隔線，把前半段標成青色 (支援半形 | 或全形 ｜)
+                            let parts = line.split(/\||｜/); 
+                            if (parts.length > 1) {
+                                html += `<div class="promo-item"><span style="color:#00ffff;">${parts[0]}</span>｜${parts[1]}</div>`;
+                            } else {
+                                html += `<div class="promo-item">${line}</div>`;
+                            }
+                        }
+                    }
+                    
+                    promoContainer.innerHTML = html;
+                    
+                    // 🌟 終極防護：拔掉原本的 inline style，完全交給動畫引擎
+                    promoContainer.style.opacity = ''; 
+                    promoContainer.style.animation = 'none';
+                    
+                    // 強制重繪 (Reflow)
+                    void promoContainer.offsetWidth; 
+                    
+                    // 重新掛上動畫，並確保結尾保持可見
+                    promoContainer.style.animation = 'fadeInPromo 1.5s ease-in forwards';
+                }
+            }
+        });
 
         window.addEventListener('DOMContentLoaded', () => {
-            // 1. 預載素材 (🌟 已修正為 .png)
+            // 🌟 補上這一行，重整時才會主動喊話！
+            if (window.parent) { window.parent.postMessage({ type: 'requestInitData' }, '*'); }
+            // 1. 預載素材 (🌟 已補上 s1 ~ s5 的 Sprite 圖片)
             const preloadSprites = [
                 'SCATTER_sprite.png', 'eye_sprite.png', 'explosion_sprite.png', 
                 's1_sprite.png', 's2_sprite.png', 's3_sprite.png', 's4_sprite.png', 's5_sprite.png'
@@ -749,6 +843,29 @@
 
             // 3. 將引擎交給 GUIController (由它統一管理按鈕與音效)
             gui = new GUIController(engine);
+
+            // 🌟 4. 終極音效互斥鎖 (安全攔截版)：確保 MG 與 FG 音樂絕對不會重疊，且不影響原系統！
+            if (window.AudioMgr && window.AudioMgr.playBGM) {
+                const originalPlayBGM = window.AudioMgr.playBGM;
+                window.AudioMgr.playBGM = function(trackName) {
+                    const bgmMain = document.getElementById('bgm_main');
+                    const bgmFree = document.getElementById('bgm_free');
+                    
+                    // 播放 MG (一般遊戲) 音樂之前，強制關閉 FG 音樂
+                    if (trackName === 'main' && bgmFree) {
+                        bgmFree.pause();
+                        bgmFree.currentTime = 0;
+                    } 
+                    // 播放 FG (免費遊戲) 音樂之前，強制關閉 MG 音樂
+                    else if (trackName === 'free' && bgmMain) {
+                        bgmMain.pause();
+                        bgmMain.currentTime = 0;
+                    }
+                    
+                    // 處理完畢後，繼續執行原本的播放指令
+                    originalPlayBGM.call(window.AudioMgr, trackName);
+                };
+            }
         });
     </script>
 </body>
